@@ -790,6 +790,7 @@
                     var messageText = $('#message').val();
                     var payload = {
                         message: messageText,
+                        action: "SendPushoverMessage"
                     }
                     $.ajax({
                         type: "POST",
