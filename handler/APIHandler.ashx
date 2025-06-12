@@ -198,6 +198,7 @@ public class ApiHandler : PluginHandler
 
             Log.Information("Action is: " + action);
             Log.Information("Action name is: " + actionName);
+            
 
             switch (action)
             {
@@ -258,99 +259,101 @@ public class ApiHandler : PluginHandler
                     context.Response.Write("{ \"response\": \"Installed Action Message Successfully" + "\" } ");
                     break;
                 case "createActionRule":
-                    
-                        var webhookMessage = new SendWebhookMessageBody
-                        {
-                            ActionMessageIdentifier = actionMessageId,
-                            ActionMessageName = "Pushover Integration Message - Automated",
-                            AuthenticationSessionId = null,
-                            Body = "",
-                            EntityIdentifier = 0,
-                            RelatedEntityType = NotificationRelatedEntityTypes.Invalid,
-                            Headers = new[]
-                        {
+
+                    var webhookMessage = new SendWebhookMessageBody
+                    {
+                        ActionMessageIdentifier = actionMessageId,
+                        ActionMessageName = "Pushover Integration Message - Automated",
+                        AuthenticationSessionId = null,
+                        Body = "",
+                        EntityIdentifier = 0,
+                        RelatedEntityType = NotificationRelatedEntityTypes.Invalid,
+                        Headers = new[]
+                    {
     new SendWebhookMessageBody.Header(1, "Content-Type", "application/json")
 
    },
-                            QueryString = "",
-                            Url = actionMessageURL,
-                            Verb = SendWebhookMessageBody.Verbs.Post,
-                            AuthenticationType = MarvalSoftware.DataTransferObjects.IntegrationMessages.SendWebhookMessageBody.AuthenticationTypes.None,
-                            UseBasicAuthentication = false,
-                            Username = "",
+                        QueryString = "",
+                        Url = actionMessageURL,
+                        Verb = SendWebhookMessageBody.Verbs.Post,
+                        AuthenticationType = MarvalSoftware.DataTransferObjects.IntegrationMessages.SendWebhookMessageBody.AuthenticationTypes.None,
+                        UseBasicAuthentication = false,
+                        Username = "",
 
 
-                        };
+                    };
 
-                        // MarvalSoftware.DataTransferObjects.IntegrationMessages.SendWebhookMessageBody
+                    // MarvalSoftware.DataTransferObjects.IntegrationMessages.SendWebhookMessageBody
 
-                        ReferencedEntityInfo[] referencedEntities = { };
-                        var groupPredicate = new GroupPredicate();
-                        // groupPredicate.Predicates.Add(new MemberPredicate()
-                        // {
-                        //     Name = "IsNew",
-                        //     Operator = MemberPredicate.Operators.Equals,
-                        //     Value = true
-                        // });
-                        groupPredicate.Predicates.Add(new MemberPredicate()
+                    ReferencedEntityInfo[] referencedEntities = { };
+                    var groupPredicate = new GroupPredicate();
+                    // groupPredicate.Predicates.Add(new MemberPredicate()
+                    // {
+                    //     Name = "IsNew",
+                    //     Operator = MemberPredicate.Operators.Equals,
+                    //     Value = true
+                    // });
+                    groupPredicate.Predicates.Add(new MemberPredicate()
+                    {
+                        Name = "Workflow",
+                        Operator = MemberPredicate.Operators.Equals,
+                        Value = WorkflowId
+                    });
+                    groupPredicate.Predicates.Add(new MemberPredicate()
+                    {
+                        Name = "Status",
+                        Operator = MemberPredicate.Operators.Equals,
+                        Value = WorkflowStatusId
+                    });
+
+                    //   groupPredicate.Predicates.Add(new MemberPredicate()
+                    //  {
+                    //      Name = "IsMajorIncident",
+                    //      Operator = MemberPredicate.Operators.Equals,
+                    //      Value = true
+                    //  });
+
+                    int ruleSetIds = 0;
+                    using (var dataGrunt = new DataGrunt())
+                    {
+                        using (var dataReader = dataGrunt.ExecuteReader("ruleSet_getRuleSetIds", new DataGrunt.DataGruntParameter("ruleSetType", 5)))
                         {
-                            Name = "Workflow",
-                            Operator = MemberPredicate.Operators.Equals,
-                            Value = WorkflowId
-                        });
-                        groupPredicate.Predicates.Add(new MemberPredicate()
-                        {
-                            Name = "Status",
-                            Operator = MemberPredicate.Operators.Equals,
-                            Value = WorkflowStatusId
-                        });
-
-                        //   groupPredicate.Predicates.Add(new MemberPredicate()
-                        //  {
-                        //      Name = "IsMajorIncident",
-                        //      Operator = MemberPredicate.Operators.Equals,
-                        //      Value = true
-                        //  });
-
-                        int ruleSetIds = 0;
-                        using (var dataGrunt = new DataGrunt())
-                        {
-                            using (var dataReader = dataGrunt.ExecuteReader("ruleSet_getRuleSetIds", new DataGrunt.DataGruntParameter("ruleSetType", 5)))
+                            var ruleSetIdOrdinal = dataReader.GetOrdinal("ruleSetId");
+                            while (dataReader.Read())
                             {
-                                var ruleSetIdOrdinal = dataReader.GetOrdinal("ruleSetId");
-                                while (dataReader.Read())
-                                {
-                                    ruleSetIds = dataReader.GetInt32(ruleSetIdOrdinal);
+                                ruleSetIds = dataReader.GetInt32(ruleSetIdOrdinal);
 
-                                }
                             }
                         }
+                    }
 
 
 
-                        this.serviceDeskFacade.PersistRule(new MarvalSoftware.Rules.Rule()
-                        {
-                            Name = "Pushover Action Rule - Automated",
-                            Predicate = groupPredicate,
-                            PredicateSummary = "",
-                            Actions = new List<IRuleAction>() {
+                    this.serviceDeskFacade.PersistRule(new MarvalSoftware.Rules.Rule()
+                    {
+                        Name = "Pushover Action Rule - Automated",
+                        Predicate = groupPredicate,
+                        PredicateSummary = "",
+                        Actions = new List<IRuleAction>() {
         new SendWebhookRuleAction
               {
                 Predicate = null,
                 Value = webhookMessage
               }
        },
-                            ActionsSummary = "Web-hook to URL http://test.com with Body TestRequestActionMessage including Headers Authorization: TestingAuth,Content-Type: application/json using Verb Post",
-                            IsActive = true
-                        }, ruleSetIds, referencedEntities, "RequestClassificationFilter");
+                        ActionsSummary = "Web-hook to URL http://test.com with Body TestRequestActionMessage including Headers Authorization: TestingAuth,Content-Type: application/json using Verb Post",
+                        IsActive = true
+                    }, ruleSetIds, referencedEntities, "RequestClassificationFilter");
 
-                        context.Response.Write("{ \"response\": \"Installed Action Rule Successfully" + "\" } ");
-                        break;
-                    
+                    context.Response.Write("{ \"response\": \"Installed Action Rule Successfully" + "\" } ");
+                    break;
+
                 case "SendPushoverMessage":
-                    var postData = this.GetPostRequestData();
-                    Log.Information(postData);
-                    dynamic jsonBody = JsonConvert.DeserializeObject(postData);
+                    //var postData = this.GetPostRequestData();
+                   
+                   Log.Information("postdata should be: "+ json);
+
+                    dynamic jsonBody = JsonConvert.DeserializeObject(json);
                     string userMessage = jsonBody.message;
 
                     var myPayload = new
@@ -368,6 +371,9 @@ public class ApiHandler : PluginHandler
                     context.Response.Write(this.ProcessRequest(httpWebRequest));
 
                     break;
+                    //default:
+
+                    //    break;
             }
         }
         else
