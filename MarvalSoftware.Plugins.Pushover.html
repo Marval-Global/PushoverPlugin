@@ -2,11 +2,12 @@
 <script type="text/javascript" src="template.js"></script>
 <template>
     <style>
-        #message{
-            vertical-align:top;
-            height:100px;
-            width:600px;
+        #message {
+            vertical-align: top;
+/*            height: 100px;*/
+            width: 600px;
         }
+
         marvalsoftware-plugins-pushover {
             display: block;
             height: 90%;
@@ -157,14 +158,17 @@
         <div>
             <!--<label>Pages:</label>-->
             <!--<select id="pages">
-        <option value="0"></option>
-    </select>-->
+                <option value="0"></option>
+            </select>-->
             Message to send:
             <br />
             <input id="message" />
             <br />
             <br />
             Do you want to include incident details?: <input type="checkbox" id="CheckBox" />
+            <br />
+            <select id="groupsDropdown"><option>Loading…</option> </select>
+            <br />
             <button id="sendMessage">Send</button>
 
 
@@ -258,16 +262,48 @@
                 _pages: null,
                 _incidents: null,
                 _createElement: null,
+                _requestNumber: null,
+                _requestID: null,
+                _requestDescription: null,
+                _contactEmail: null,
 
                 init: function () {
                     Pushover = this;
-                    
+
                     this._sendInProgress = false; //we will use later to keep track of if we are sending a request
                     var HeaderText = $('#ctl00_ctl00_cph_entityHeaderText').text();
                     var currentUrl = window.top.location.href;
                     var currentHost = window.top.location.host;
                     var _fullPluginPathHandler = "https://" + currentHost + Pushover._getPluginPath() + "handler/ApiHandler.ashx";
+                    displayGroups();
+                    //displayGroups();
+                    // should this be placed here
+                    //var getGroups = fetch(_fullPluginPathHandler, {
+                    //    method: "POST", //should this be a post
+                    //    headers: { "Content-Type": "application/json" },
+                    //    body: JSON.stringify({
+                    //        action: "getGroups"
+                    //    })
+                    //});
+                    //$(document).ready(function () {
+                    //    getGroups.then(async getAllGroups => {
+                    //        var json = await getAllGroups.json();
+                    //       let groupsData = json.groups;
+                    //        // console.log("Have workflows statuses as ", jsonWorkflowStatusData);
+                    //        //console.log("groups data is: ", json);
+                    //        let $selectGroup = $('#groupsDropdown');
+                    //        $selectGroup.empty();
+                    //        $selectGroup.append('<option value="">-- Select a Group --</option>');
+                    //        json.groups.forEach(element => {
+                    //            console.log(element);
+                    //            $selectGroup.append($('<option>').val(element.group).text(element.name));
+                    //       })
+                    //    })
+                    //})
+
+
                     if (currentUrl.includes("Plugin.aspx") && HeaderText == 'MarvalSoftware.Plugins.Pushover') {
+
                         function OpenInstallRequestRuleDialog() {
                             event.preventDefault();
                             $('#setupActionRuleModal').fadeIn(200);
@@ -437,6 +473,7 @@
                                 $('#InstallRequestActionRuleSpinner').hide();
                                 return;
                             } else {
+
                                 console.log("Selected is ", $("#workflowStatusDropdown option:selected"));
                                 var WorkflowStatusId = $("#workflowStatusDropdown option:selected").val();
                                 var WorkflowId = $("#workflowDropdown option:selected").val();
@@ -456,6 +493,9 @@
                             }
 
                         }
+
+                        
+
                         async function getLatestPluginVersion() {
 
                             var url = "https://raw.githubusercontent.com/Marval-Global/PushoverPlugin/refs/heads/main/manifest.json";
@@ -480,22 +520,74 @@
                         $(document).ready(function () {
 
                             getLatestPluginVersion();
+                            //displayGroups();
                         });
                     }
                     else if (!currentUrl.includes("Plugin.aspx")) {
 
                         this._setUpQuickMenu();
+                        this._requestNumber = MarvalSoftware.UI.Controls.ScriptManager.getInstance().getPage().getRequestNumber();
+                        this._requestID = MarvalSoftware.UI.Controls.ScriptManager.getInstance().getPage()._requestId;
+                        console.log(MarvalSoftware.UI.Controls.ScriptManager.getInstance().getPage());
+                        this._requestDescription = MarvalSoftware.UI.Controls.ScriptManager.getInstance().getPage()._requestDescription;
+                        this._contactEmail = MarvalSoftware.UI.Controls.ScriptManager.getInstance().getPage().getContactPreferredEmail();
 
                     }
+
+                    async function displayGroups() {
+                        var getGroups = fetch(_fullPluginPathHandler, {
+                            method: "POST", //should this be a post
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                action: "getGroups"
+                            })
+                        });
+                        
+                            getGroups.then(async getAllGroups => {
+                                var json = await getAllGroups.json();
+                                let groupsData = json.groups;
+                                // console.log("Have workflows statuses as ", jsonWorkflowStatusData);
+                                console.log("groups data is: ", json);
+                                let $selectGroup = $('#groupsDropdown');
+                                $selectGroup.empty();
+                                $selectGroup.append('<option value="">-- Select a Group --</option>');
+                                json.groups.forEach(element => {
+                                    //console.log(element);
+                                    $selectGroup.append($('<option>').val(element.group).text(element.name));
+                                })
+                            })
+                        
+                    }
+                    $(document).ready(function () {
+                        displayGroups();
+                    });
 
                     async function downloadRequestActionMessage() { //should be an async function
                         event.preventDefault();
                         console.log("we are calling download request action message");
-                        var actionMessageText = `{
+                        var actionMessageText = `
+@{
+    var lastNote = (Model.Notes != null && Model.Notes.Count > 0)
+        ? Model.Notes[Model.Notes.Count - 1]
+        : null;
+var lastNoteContent = @Model.Description;
+}
+
+@if (lastNote != null)
+{
+lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Created + " " + @lastNote.Author;
+
+}
+
+
+{
                            "Identifier": @Model.Identifier,
                            "ContactName": "@Model.LastUpdatedBy.Name.GivenName @Model.LastUpdatedBy.Name.FamilyName ",
                            "Email": "@Model.PreferredNotification.Address",
-                        "message": "@Model.Description"
+                        "message": "@lastNoteContent",
+"serviceName": "@Model.Service.Name"
+
+
                         }
                             `;
                         var currentUrl = window.top.location.host;
@@ -503,7 +595,7 @@
                         //$('#InstallRequestActionMessage').attr('disabled', true);
 
                         console.log("actionmsgtext: ", actionMessageText);
-                        var snippetFile = await(await fetch(pluginPathHandler, {
+                        var snippetFile = await (await fetch(pluginPathHandler, {
                             "method": "POST",
                             body: JSON.stringify({ action: "createActionMessage", actionMessageText: actionMessageText }),
                             "headers": [["content-type", "application/json"]]
@@ -515,12 +607,12 @@
                         $('#requestActionMessageResponse').css('color', 'green');
                         //  console.log("Have snippet as ", snippetFile);
                     }
-                        
 
-                        
-                    
+
+
+
                 },
-                
+
 
                 _getPluginPath: function () {
                     return this.attributes["data-pluginpath"].value;
@@ -548,7 +640,7 @@
                     this._element = window.top.document.importNode(template, true);
 
 
-                   // this._body = this._element.querySelector("textarea");
+                    // this._body = this._element.querySelector("textarea");
                     this._cards = this._element.querySelector(".cards");
                     //this._trimWhiteSpaces(this._body);
                     var eventManager = MarvalSoftware.UI.Dom.EventManager.getInstance();
@@ -557,10 +649,10 @@
                     this._createElement = this._element.querySelector(".action-buttons > button");
                     this._refreshLink = this._element.querySelector("a");
                     //this._refreshLink.firstChild.setAttribute("src", this._getPluginPath() + "img/refresh_spinner_16.png");
-                   // this._refreshElement = this._element.querySelector(".message-area > div");
+                    // this._refreshElement = this._element.querySelector(".message-area > div");
                     //this._pages = this._element.querySelector("#pages");
                     //this._incidents = this._element.querySelector("#incidents");
-                   // eventManager.addHandler(this._body, "input", this._enableOrDisableSubmit, this);
+                    // eventManager.addHandler(this._body, "input", this._enableOrDisableSubmit, this);
                     //eventManager.addHandler(this._createElement, "click", this._createElement_click, this);
                     //eventManager.addHandler(this._refreshLink, "click", this._refreshCards, this);
                     //eventManager.addHandler(this._pages, "change", this._getAllPageIncindents, this);
@@ -785,19 +877,33 @@
                         }.bind(this)
                     });
                 }, _postMessage: function (sender, e) {
-                    console.log("We are here");
                     e.preventDefault();
                     var messageText = $('#message').val();
-                    var payload = {
-                        message: messageText,
-                        action: "SendPushoverMessage"
+                    let email = this._contactEmail ? this._contactEmail : " No email defined";
+                    let description = window.top.document.getElementById("ctl00_cph_description").value;
+                    var payload = {};
+                    if (window.top.document.getElementById("CheckBox").checked) {
+                        var formulatedMessage = messageText + " Under Request Number: " + this._requestNumber + " Request ID: " + this._requestID + " The Request Description: " + description + " from :" + email;
+                        payload = {
+                            message: formulatedMessage,
+                            action: "SendPushoverMessage"
+                        }
+                    } else {//not checked
+                        payload = {
+                            message: messageText,
+                            action: "SendPushoverMessage"
+                        }
                     }
+                    console.log("We are here");
+
+
+
                     $.ajax({
                         type: "POST",
                         url: this._getPluginPath() + "handler/ApiHandler.ashx?action=SendPushoverMessage",
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
-                        data:JSON.stringify(payload),
+                        data: JSON.stringify(payload),
                         success: function (result) {
                             if (Object.keys(result).length > 0) {
                                 this._errorPopup(result);
@@ -966,7 +1072,7 @@
                     }
                 },
 
-               
+
 
 
                 _enableOrDisableMessageTextArea: function (sender, e) {
