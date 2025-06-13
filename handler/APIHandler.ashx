@@ -198,7 +198,7 @@ public class ApiHandler : PluginHandler
 
             Log.Information("Action is: " + action);
             Log.Information("Action name is: " + actionName);
-            
+
 
             switch (action)
             {
@@ -350,8 +350,8 @@ public class ApiHandler : PluginHandler
 
                 case "SendPushoverMessage":
                     //var postData = this.GetPostRequestData();
-                   
-                   Log.Information("postdata should be: "+ json);
+
+                    Log.Information("postdata should be: "+ json);
 
                     dynamic jsonBody = JsonConvert.DeserializeObject(json);
                     string userMessage = jsonBody.message;
@@ -371,6 +371,10 @@ public class ApiHandler : PluginHandler
                     context.Response.Write(this.ProcessRequest(httpWebRequest));
 
                     break;
+                case "getGroups":
+                        httpWebRequest = this.BuildRequest("https://api.pushover.net/1/groups.json?token=" + APPToken, null, "GET");
+                        context.Response.Write(this.ProcessRequest(httpWebRequest));
+                        break;
                     //default:
 
                     //    break;
