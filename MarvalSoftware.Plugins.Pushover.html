@@ -2,6 +2,39 @@
 <script type="text/javascript" src="template.js"></script>
 <template>
     <style>
+        #groupsDropdown{
+            font-weight:normal;
+        }
+        .content {
+            border-radius: 10px;
+            font-family: 'Inter', 'Open Sans', sans-serif;
+            font-weight:bold;
+            /*            height:500px !important;*/
+        }
+        .messageButton{
+            font-weight:normal;
+            cursor:pointer;
+        }
+        .LinkedProjectsHeader {
+            /* background: linear-gradient(to bottom right,#cbd6e2,#cbd6e2) !important;  */
+            color: #00314a !important;
+            font-size: 12px !important;
+            font-family: 'Inter', 'Open Sans', sans-serif;
+        }
+        
+            .LinkedProjectsHeader h1 {
+                /* background: linear-gradient(to bottom right,#cbd6e2,#cbd6e2) !important;  */
+                color: #00314a !important;
+                font-size: 12px !important;
+                font-family: 'Inter', 'Open Sans', sans-serif;
+            }
+        .headerColourChange {
+            background: linear-gradient(to bottom right, #cbd6e2, #cbd6e2) !important;
+            color: #00314a !important;
+            font-size: 18px !important;
+            font-family: 'Inter', 'Open Sans', sans-serif;
+            border-radius:10px;
+        }
         #message {
             vertical-align: top;
 /*            height: 100px;*/
@@ -9,11 +42,12 @@
         }
 
         marvalsoftware-plugins-pushover {
-            display: block;
-            height: 90%;
+/*            display: block;*/
+            height: 200px;
         }
 
             marvalsoftware-plugins-pushover > .config-area {
+                height:100px;
                 padding: 0px 10px 10px 10px;
                 box-shadow: 0 1px 0 0 #ebe8e4;
             }
@@ -23,14 +57,14 @@
                 }
 
             marvalsoftware-plugins-pushover > .message-area {
-                display: block;
-                height: 65%;
+/*                display: block;*/
+                height: 100px;
                 padding: 10px;
                 box-shadow: 0 1px 0 0 #ebe8e4;
             }
 
                 marvalsoftware-plugins-pushover > .message-area > .cards {
-                    height: 86%;
+                    height: ;
                     overflow-y: auto;
                     padding: 10px;
                     box-shadow: 0 1px 0 0 #ebe8e4;
@@ -54,7 +88,7 @@
 
                         marvalsoftware-plugins-pushover > .message-area > .cards .card .tooltip {
                             position: relative;
-                            display: inline-block;
+/*                            display: inline-block;*/
                         }
 
                             marvalsoftware-plugins-pushover > .message-area > .cards .card .tooltip .tooltiptext {
@@ -136,10 +170,16 @@
                 marvalsoftware-plugins-pushover > .config-area > div label {
                     font-size: 1rem;
                     font-weight: 600;
-                    display: inline-block;
-                    width: 120px;
+/*                    display: inline-block;*/
+                    width: 50px;
                     padding-bottom: 5px;
                 }
+        .headerColourChange {
+            background: linear-gradient(to bottom right, #cbd6e2, #cbd6e2) !important;
+            color: #00314a !important;
+            font-size: 18px !important;
+            font-family: 'Inter', 'Open Sans', sans-serif;
+        }
 
             marvalsoftware-plugins-pushover > .message-area label {
                 width: 100px !important;
@@ -162,38 +202,24 @@
             </select>-->
             Message to send:
             <br />
-            <input id="message" />
+            <input id="message"/>
             <br />
             <br />
             Do you want to include incident details?: <input type="checkbox" id="CheckBox" />
             <br />
+            <br />
+            If you wish to send a notification to a group rather than to one user,
             <select id="groupsDropdown"><option>Loading…</option> </select>
             <br />
-            <button id="sendMessage">Send</button>
+            <br />
+            <button id="sendMessage" class="messageButton">Send</button>
 
 
         </div>
-        <div>
-            <!--<label>Incidents:</label>-->
-            <!--<select id="incidents" disabled>
-                <option value="0"></option>
-            </select>-->
-        </div>
+        
     </div>
-    <!--<div class="message-area">
-        <div class="header">
-            <label>Update History:</label>
-            <a href="#"><img></a>
-        </div>
-        <div class="cards"></div>
-    </div>-->
-    <div class="update-area">
-        <!--<label>Update Message:</label>-->
-        <!--<textarea disabled></textarea>-->
-        <div class="action-buttons">
-            <!--<button id="send-button" disabled>Send</button>-->
-        </div>
-    </div>
+    
+
 </template>
 <template class="cardTemplate">
     <div class="card">
@@ -248,6 +274,11 @@
 
         var MarvalSoftware = window.top.MarvalSoftware;
         var $ = window.top.$;
+        //function updateButtonVisual() {
+        //    if (document.getElementById("message").value != "") {
+        //        document.getElementById("sendMessage").style.color = "blue";
+        //    }
+        //} 
         
 
         MarvalSoftware.Plugins.define("marvalsoftware-plugins-pushover",
@@ -279,61 +310,24 @@
                     var currentUrl = window.top.location.href;
                     var currentHost = window.top.location.host;
                     _fullPluginPathHandler = "https://" + currentHost + Pushover._getPluginPath() + "handler/ApiHandler.ashx";
-                    //async function displayGroups() {
-                    //    try {
-                    //        const response = await fetch(_fullPluginPathHandler, {
-                    //            method: "POST",
-                    //            headers: { "Content-Type": "application/json" },
-                    //            body: JSON.stringify({ action: "getGroups" })
-                    //        });
-
-                    //        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-
-                    //        const json = await response.json();
-                    //        console.log("groups data is: ", json);
-
-                    //        if (!json || !Array.isArray(json.groups)) {
-                    //            console.error("Invalid or missing groups in response", json);
-                    //            return;
-                    //        }
-
-                    //        let $selectGroup = $('#groupsDropdown');
-                    //        if ($selectGroup.length === 0) {
-                    //            console.error("Dropdown element not found");
-                    //            return;
-                    //        }
-
-                    //        $selectGroup.empty().append('<option value="">-- Select a Group --</option>');
-                    //        json.groups.forEach(element => {
-                    //            $selectGroup.append($('<option>').val(element.group).text(element.name));
-                    //        });
-
-                    //    } catch (error) {
-                    //        console.error("Failed to load groups:", error);
+                    //function updateButtonVisual() {
+                    //    if (window.top.document.getElementById("message").value != "") {
+                    //        window.top.document.getElementById("sendMessage").style.color = "blue";
                     //    }
                     //}
+                    //window.top.document.getElementById("message").onchange = updateButtonVisual();
+                    
+                   
+                    
 
-                    //$(document).ready(function () {
-                    //    displayGroups();
-                    //});
-
-                    //$(document).ready(function () {
-                    //    displayGroups();
-                    //});
-
+                 
 
                     if (currentUrl.includes("Plugin.aspx") && HeaderText == 'MarvalSoftware.Plugins.Pushover') {
 
                         function OpenInstallRequestRuleDialog() {
                             event.preventDefault();
                             $('#setupActionRuleModal').fadeIn(200);
-                            //var getRequestAtributes = fetch(_fullPluginPathHandler, {
-                            //    method: "POST",
-                            //    headers: { "Content-Type": "application/json" },
-                            //    body: JSON.stringify({
-                            //        action: "getRequestAtributes"
-                            //    })
-                            //});
+                           
 
                             var getWorkflowStatuses = fetch(_fullPluginPathHandler, {
                                 method: "POST",
@@ -374,6 +368,12 @@
 
                         $('head').append(`
                         <style>
+                        .headerColourChange {
+    background: linear-gradient(to bottom right, #cbd6e2, #cbd6e2) !important;
+    color: #00314a !important;
+    font-size: 18px !important;
+    font-family: 'Inter', 'Open Sans', sans-serif;
+}
                         .modalBox {
   position: fixed;
   inset: 0;
@@ -692,6 +692,13 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                         return key;
                     }
                 },
+                _updateButtonVisual() {
+                    if (window.top.document.getElementById("message").value != "") {
+                        window.top.document.getElementById("sendMessage").style.color = "green";
+                    } else {
+                        window.top.document.getElementById("sendMessage").style.color = "grey";
+                    }
+    }, 
 
                 _renderElement: function () {
                     var template = document.querySelector("template").content;
@@ -706,6 +713,12 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                     eventManager.addHandler(this._sendMessageButton, "click", this._postMessage, this);
                     this._createElement = this._element.querySelector(".action-buttons > button");
                     this._refreshLink = this._element.querySelector("a");
+
+                    this.messageInput = this._element.querySelector("#message");
+                    eventManager.addHandler(this.messageInput, "input", this._updateButtonVisual, this);
+
+                    
+                    //window.top.document.getElementById("message").onchange = updateButtonVisual();
                     //this._refreshLink.firstChild.setAttribute("src", this._getPluginPath() + "img/refresh_spinner_16.png");
                     // this._refreshElement = this._element.querySelector(".message-area > div");
                     //this._pages = this._element.querySelector("#pages");
@@ -731,8 +744,8 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                         this._pluginWindow = new MarvalSoftware.UI.Window({
                             appendToElement: window.top.document.getElementById("aspnetForm"),
                             title: "Pushover",
-                            height: 700,
-                            width: 900,
+                            height: 200,
+                            width: 800,
                             minHeight: 700,
                             minWidth: 432,
                             isResizable: true,
@@ -741,7 +754,7 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                         });
                         this._renderElement();
                         this._showGroups();
-
+                        
                         //this._getAllPages();
                     }
                     //this._resetPopUpValues();
@@ -749,6 +762,8 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                         this._pluginWindow.centerToViewport();
                     }
                     this._pluginWindow.show();
+                    $('.window .content .header').eq(0).addClass('headerColourChange');
+                    $('.window .content .header').eq(1).addClass('LinkedProjectsHeader');
                 },
 
                 _errorPopup: function (result) {
