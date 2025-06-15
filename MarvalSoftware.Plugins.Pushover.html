@@ -694,9 +694,9 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                 },
                 _updateButtonVisual() {
                     if (window.top.document.getElementById("message").value != "") {
-                        window.top.document.getElementById("sendMessage").style.color = "green";
+                        window.top.document.getElementById("sendMessage").style.backgroundColor = "green";
                     } else {
-                        window.top.document.getElementById("sendMessage").style.color = "grey";
+                        window.top.document.getElementById("sendMessage").style.backgroundColor = "grey";
                     }
     }, 
 
@@ -958,7 +958,7 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                     let description = window.top.document.getElementById("ctl00_cph_description").value;
                     var payload = {};
                     if (window.top.document.getElementById("CheckBox").checked) {
-                        var formulatedMessage = messageText + " Under Request Number: " + this._requestNumber + " Request ID: " + this._requestID + " The Request Description: " + description + " from :" + email;
+                        var formulatedMessage = messageText + " under request number: " + this._requestNumber + ", request ID: " + this._requestID + ", the request description: " + description + ", from :" + email;
                         payload = {
                             message: formulatedMessage,
                             action: "SendPushoverMessage"
