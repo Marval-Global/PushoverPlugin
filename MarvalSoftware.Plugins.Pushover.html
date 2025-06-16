@@ -274,12 +274,6 @@
 
         var MarvalSoftware = window.top.MarvalSoftware;
         var $ = window.top.$;
-        //function updateButtonVisual() {
-        //    if (document.getElementById("message").value != "") {
-        //        document.getElementById("sendMessage").style.color = "blue";
-        //    }
-        //} 
-        
 
         MarvalSoftware.Plugins.define("marvalsoftware-plugins-pushover",
             {
@@ -310,16 +304,6 @@
                     var currentUrl = window.top.location.href;
                     var currentHost = window.top.location.host;
                     _fullPluginPathHandler = "https://" + currentHost + Pushover._getPluginPath() + "handler/ApiHandler.ashx";
-                    //function updateButtonVisual() {
-                    //    if (window.top.document.getElementById("message").value != "") {
-                    //        window.top.document.getElementById("sendMessage").style.color = "blue";
-                    //    }
-                    //}
-                    //window.top.document.getElementById("message").onchange = updateButtonVisual();
-                    
-                   
-                    
-
                  
 
                     if (currentUrl.includes("Plugin.aspx") && HeaderText == 'MarvalSoftware.Plugins.Pushover') {
@@ -514,7 +498,6 @@
 
                         }
 
-                        
 
                         async function getLatestPluginVersion() {
 
@@ -540,7 +523,6 @@
                         $(document).ready(function () {
 
                             getLatestPluginVersion();
-                            //displayGroups();
                         });
                     }
                     else if (!currentUrl.includes("Plugin.aspx")) {
@@ -556,35 +538,6 @@
                         
 
                     }
-
-                    //async function displayGroups() {
-                    //    var getGroups = fetch(_fullPluginPathHandler, {
-                    //        method: "POST", //should this be a post
-                    //        headers: { "Content-Type": "application/json" },
-                    //        body: JSON.stringify({
-                    //            action: "getGroups"
-                    //        })
-                    //    });
-                        
-                    //        getGroups.then(async getAllGroups => {
-                    //            var json = await getAllGroups.json();
-                    //            let groupsData = json.groups;
-                    //            // console.log("Have workflows statuses as ", jsonWorkflowStatusData);
-                    //            console.log("groups data is: ", json);
-                    //            let $selectGroup = $('#groupsDropdown');
-                    //            $selectGroup.empty();
-                    //            $selectGroup.append('<option value="">-- Select a Group --</option>');
-                    //            json.groups.forEach(element => {
-                    //                //console.log(element);
-                    //                $selectGroup.append($('<option>').val(element.group).text(element.name));
-                    //            })
-                    //        })
-                        
-                    //}
-                    //$(document).ready(function () {
-                    //    displayGroups();
-                    //});
-
                     async function downloadRequestActionMessage() { //should be an async function
                         event.preventDefault();
                         console.log("we are calling download request action message");
@@ -1073,7 +1026,6 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                     this._sendInProgress = true;
                     this._enableOrDisableSubmit();//as send is in progress, we need to disable the button
 
-                    //const sendBtn = window.top.document.getElementById("send-button"); //need window top as js is running in other window
                     var data = { incident: { body: value } };
                     var pageId = this._pages.options[this._pages.selectedIndex].value;
                     var incidentNumber = this._incidents.options[this._incidents.selectedIndex].value;
@@ -1123,21 +1075,6 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                     });
                 },
 
-                //_createElement_click: function (sender, e) {
-                //    const sendBtn = window.top.document.getElementById("send-button");//need this as we are running js in other window
-                //    sendBtn.disabled = true; //disables button
-                //    this._update(this._body.value);
-                //    e.preventDefault();
-                //},
-
-                //_enableOrDisableSubmit: function (sender, e) {
-
-                //    if (this._body.value && !this._sendInProgress) {//body has text in it and function is still in progress of sending
-                //        this._createElement.removeAttribute('disabled');
-                //    } else {
-                //        this._createElement.setAttribute('disabled', '');
-                //    }
-                //},
 
                 _enableOrDisableIncidentsOption: function (sender, e) {
                     if (this._pages.selectedIndex > 0) {
@@ -1146,8 +1083,6 @@ lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Cre
                         this._incidents.setAttribute('disabled', '');
                     }
                 },
-
-
 
 
                 _enableOrDisableMessageTextArea: function (sender, e) {
