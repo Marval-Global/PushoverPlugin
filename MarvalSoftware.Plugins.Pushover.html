@@ -294,6 +294,8 @@
                 _requestDescription: null,
                 _contactEmail: null,
                 _fullPluginPathHandler: null,
+                _requestActionMessageID: null,
+
 
 
 
@@ -304,10 +306,12 @@
                     var HeaderText = $('#ctl00_ctl00_cph_entityHeaderText').text();
                     var currentUrl = window.top.location.href;
                     var currentHost = window.top.location.host;
-                    _fullPluginPathHandler = "https://" + currentHost + Pushover._getPluginPath() + "handler/ApiHandler.ashx";
+                    _fullPluginPathHandler = "https://" + currentHost + Pushover._getPluginPath() + "handler/APIHandler.ashx";
+                    //checkRequestActionMessageExists();
                  
-
+                    
                     if (currentUrl.includes("Plugin.aspx") && HeaderText == 'MarvalSoftware.Plugins.Pushover') {
+                        checkRequestActionMessageExists();
 
                         function OpenInstallRequestRuleDialog() {
                             event.preventDefault();
@@ -548,6 +552,7 @@
                                 var WorkflowId = $("#workflowDropdown option:selected").val();
                                 const encodedFullUrl = encodeURI(_fullPluginPathHandler);
                                 //console.log("we ")
+
                                 var createActionRule = await (await fetch(_fullPluginPathHandler, {
                                     "method": "POST",
                                     body: JSON.stringify({ actionMessageId: Pushover._requestActionMessageID, actionMessageURL: encodedFullUrl, WorkflowStatusId: WorkflowStatusId, WorkflowId: WorkflowId, action: "createActionRule" }),
@@ -560,6 +565,41 @@
 
 
                             }
+
+                        }
+
+                        function checkRequestActionMessageExists() {
+                            var requestActionMessageName = "Pushover Integration Message - Automated";
+                            var foundItem = false;
+                            $.get('/MSM/RFP/Forms/RequestActionMessage.aspx', function (html) {
+                                $(html).find('#ctl00_ctl00_ctl00_cph_existingEntitiesContentPlaceHolder_ExistingEntitiesList_loadMoreList_items a.item')
+
+                                    .each(function () {
+
+                                        if ($(this).attr('title') == requestActionMessageName) {
+
+                                            foundItem = true;
+                                            Pushover._requestActionMessageID = $(this).attr('href').match(/id=(\d+)$/)[1];
+                                        }
+                                        // console.log($(this).attr('search'));
+
+                                    });
+                                if (foundItem == true) {
+
+                                    //  $('#isRequestActionMessageInstalled').append('You have a request action message in your list of request action messages <a href="/MSM/RFP/Forms/RequestActionMessage.aspx" >here</a>, you do not need to install it.');
+                                    $('#pluginStatus').append('<br><span style="color:green">You have a request action message in your list of request action messages <a href="/MSM/RFP/Forms/RequestActionMessage.aspx" >here</a>, you do not need to install it.</span>');
+                                    //   $('#isRequestActionMessageInstalled').css('color', 'green');
+                                    //   $('#isRequestActionMessageInstalled').attr('')
+                                } else {
+                                    $('#pluginStatus').append('<span style="color:red"><br>You currently do not have the action message installed, click the button above to install it.<br>Once installed, it will appear in the list <a href="/MSM/RFP/Forms/RequestActionMessage.aspx">here</a> as an item called "Pushover Integration Message - Automated</span>"');
+                                    // $('#isRequestActionMessageInstalled').append('You currently do not have the action message installed, click the button above to install it.<br>Once installed, it will appear in the list <a href="/MSM/RFP/Forms/RequestActionMessage.aspx">here</a> as an item called "Pushover Integration Message - Automated"');
+                                    //  $('#isRequestActionMessageInstalled').css('color', 'red');
+                                }
+                            })
+                                .fail(function () {
+                                    // //  $select.empty()
+                                    //     .append('<option disabled>Error loading list</option>');
+                                });
 
                         }
 
@@ -607,29 +647,35 @@
                         event.preventDefault();
                         console.log("we are calling download request action message");
                         var actionMessageText = `
+
 @{
     var lastNote = (Model.Notes != null && Model.Notes.Count > 0)
         ? Model.Notes[Model.Notes.Count - 1]
         : null;
-var lastNoteContent = @Model.Description;
+
+var requestDescription = @Model.Description;
+var fullMessage = "";
 }
 
 @if (lastNote != null)
 {
-lastNoteContent =  lastNoteContent + " " + @lastNote.Content + " "+@lastNote.Created + " " + @lastNote.Author;
+fullMessage=  "<b>Description:</b><br> " + requestDescription+ "<br> <b>Last Note:</b><br> " + @lastNote.Content + "<br><b>Last Note Created On:</b><br> "+@lastNote.Created + "<br> <b>Last Note Author</b><br> " + @lastNote.Author + " <br> <b>Service Name:</b><br>"+@Model.Service.Name + "<br>";
 
 }
 
 
 {
                            "Identifier": @Model.Identifier,
+
                            "ContactName": "@Model.LastUpdatedBy.Name.GivenName @Model.LastUpdatedBy.Name.FamilyName ",
                            "Email": "@Model.PreferredNotification.Address",
-                        "message": "@lastNoteContent",
-"serviceName": "@Model.Service.Name"
+                        "message": "@fullMessage",
+"serviceName": "@Model.Service.Name",
+"action": "SendPushoverMessage"
 
 
                         }
+
                             `;
                         var currentUrl = window.top.location.host;
                         var pluginPathHandler = "https://" + currentUrl + Pushover._getPluginPath() + "handler/ApiHandler.ashx";
