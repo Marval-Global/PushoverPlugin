@@ -331,7 +331,7 @@ public class ApiHandler : PluginHandler
 
                     this.serviceDeskFacade.PersistRule(new MarvalSoftware.Rules.Rule()
                     {
-                        Name = "Pushover Action Rule - Automated",
+                        Name = "Pushover Integration Rule - Automated",
                         Predicate = groupPredicate,
                         PredicateSummary = "",
                         Actions = new List<IRuleAction>() {
@@ -363,6 +363,7 @@ public class ApiHandler : PluginHandler
                         user = UserAPIKey,
 
                         message = userMessage,
+                        html = 1,
                     };
                     string payloadJson = JsonConvert.SerializeObject(myPayload);
                     // Information.log(payloadJson);
@@ -382,8 +383,9 @@ public class ApiHandler : PluginHandler
         }
         else
         {
-
+           context.Response.Write("no info");
         }
+
 
     }
 
